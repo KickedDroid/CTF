@@ -7,14 +7,14 @@ async fn main() ->  Result<(), Error> {
     let args: Vec<String> = env::args().collect();
     let ip = &args[1];
 
-    println!("{:?}", ip);
+    println!("Running scans on {:?} using nmap and subscout....", ip);
 
     let nmap_cmd = format!("nmap -sV -sC {:?}", ip);
-    let nmap_result = Command::new("sh")
+    let nmap_result = Command::new("bash")
         .arg("-c")
         .arg(nmap_cmd)
         .output()
-        .expect("No docker installed");
+        .expect("nmap scan failed...");
     if nmap_result.status.success() {
         
         println!("{}",String::from_utf8_lossy(&nmap_result.stdout));
@@ -22,15 +22,14 @@ async fn main() ->  Result<(), Error> {
     }
 
     let subdomain_enum_cmd = format!("./subscout -t {}", ip);
-    let nmap_result = Command::new("bash")
+    let subd_enum_result = Command::new("bash")
         .arg("-c")
         .arg(subdomain_enum_cmd)
         .output()
-        .expect("No docker installed");
-    if nmap_result.status.success() {
-        
-        println!("{}",String::from_utf8_lossy(&nmap_result.stdout));
-        process_nmap_result(String::from_utf8_lossy(&nmap_result.stdout).to_string())
+        .expect("Subdomain Enumeration failed...");
+    if subd_enum_result.status.success() {
+        println!("{}",String::from_utf8_lossy(&subd_enum_result.stdout));
+        process_nmap_result(String::from_utf8_lossy(&subd_enum_result.stdout).to_string())
     }
     Ok(())
 }
