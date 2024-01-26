@@ -1,1 +1,1 @@
-cargo build --release && cp /pentest/target/release/pentest /pentest/binaries/
+cargo build --release && cp target/release/pentest binaries/

@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 clap = "4.4.12"
-subrut = "0.1.1"
 tokio = {version="1.35.1",features = ["full"] }
