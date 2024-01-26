@@ -1,0 +1,1 @@
+cd subscout && cargo build --release && cp /home/zdroid/Documents/Pentesting/pentest/subscout/target/release/subscout /home/zdroid/Documents/Pentesting/pentest/src/
