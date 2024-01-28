@@ -1,6 +1,7 @@
 mod utils;
 mod nmap;
 mod subdenum;
+mod fuzzing;
 use std::env;
 use std::process::{Command, Output, Stdio};
 #[tokio::main]
@@ -13,7 +14,7 @@ async fn main() ->  Result<(), std::io::Error> {
 
     nmap::nmap_scan(ip.clone());
     subdenum::subdomain_enum(ip.clone());
-
+    fuzzing::fuzz(ip.clone());
     
     Ok(())
 }
