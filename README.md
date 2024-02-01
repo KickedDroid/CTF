@@ -1,4 +1,9 @@
 # Pentest Automation with Rust
-
-
-''bash build.sh''
+---
+## Build
+``bash build.sh``
+## Run 
+```
+cd binaries
+./pentest url
+```
