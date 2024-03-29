@@ -10,7 +10,7 @@ pub(crate) fn fuzz(url: String) {
             "-w",
             "../wordlists/raft-medium-directories.txt",
             "-o",
-            format!("/ferox/ferox-{}.txt", url.clone()).as_str(),
+            format!("ferox-{}.txt", url.clone()).as_str(),
         ])
         .output()
         .expect("feroxbuster scan failed...");
