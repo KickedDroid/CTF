@@ -2,29 +2,28 @@ use std::process::Command;
 
 
 
-pub(crate) fn nmap_scan(ip: String) -> String {
-    let nmap_cmd = format!("nmap -sV -sC {:?}", ip);
-    let nmap_result = Command::new("bash")
-        .arg("-c")
-        .arg(nmap_cmd)
+pub(crate) fn nmap_scan(ip: String) {
+   
+    let nmap_result = Command::new("nmap")
+        .args([
+            "-sC",
+            "-sV",
+            ip.clone().as_str(),
+        ])
         .output()
         .expect("nmap scan failed...");
-    if nmap_result.status.success() {
-        //println!("{}",String::from_utf8_lossy(&nmap_result.stdout));
-        process_nmap_result(String::from_utf8_lossy(&nmap_result.stdout).to_string())
-    }
-    return String::from_utf8_lossy(&nmap_result.stdout.clone()).to_string()
+    print!("{}", String::from_utf8_lossy(&nmap_result.stdout));
 }
 
 fn process_nmap_result(res: String)  {
     match res.as_str() {
-        res if res.contains("5432/postgres  open") => todo!(),
-        res if res.contains("53/tcp  open domain") => todo!(),
-        res if res.contains("80/tcp  open   http") => {
+        res if res.contains("5432") => todo!(),
+        res if res.contains("53") => todo!(),
+        res if res.contains("80") => {
             println!("http 80 service found..")
         },
-        res if res.contains("443/tcp open   ssl/http") => todo!(),
-        res if res.contains("21/ftp  open") => {
+        res if res.contains("443") => todo!(),
+        res if res.contains("21") => {
             println!("Found FTP..")
         },
         _ => {},

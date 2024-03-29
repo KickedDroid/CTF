@@ -1,17 +1,19 @@
 use std::process::Command;
 
-pub(crate) fn fuzz(url: String) -> String {
+pub(crate) fn fuzz(url: String) {
     println!("Running Feroxbuster on {}", url.clone());
-    let ferox_cmd = format!("feroxbuster --url {:?} -w ../wordlists/raft-medium-directories.txt -o output/ferox-{}.txt", url.clone(), url.clone());
-    let ferox_result = Command::new("bash")
-        .arg("-c")
-        .arg(ferox_cmd)
+    
+    let ferox_result = Command::new("feroxbuster")
+        .args([
+            "--url",
+            url.clone().as_str(),
+            "-w",
+            "../wordlists/raft-medium-directories.txt",
+            "-o",
+            format!("ferox-{}.txt", url.clone()).as_str(),
+        ])
         .output()
         .expect("feroxbuster scan failed...");
-    if ferox_result.status.success() {
-        println!("Completed Ferroxbuster!! See output file in /output");
-    } else {
-        println!("Failed Feroxbuster")
-    }
-    return String::from_utf8_lossy(&ferox_result.stdout.clone()).to_string()
+
+    print!("{}", String::from_utf8_lossy(&ferox_result.stdout));
 }
