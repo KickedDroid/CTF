@@ -31,4 +31,9 @@ mod tests {
         let url = "google.com";
         super::subdenum::subdomain_enum(url.to_string());
     }
+    #[test]
+    fn test_fuzz() {
+        let url = "google.com";
+        super::fuzzing::fuzz(url.to_string());
+    }
 }

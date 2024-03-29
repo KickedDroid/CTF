@@ -8,6 +8,8 @@ pub(crate) fn nmap_scan(ip: String) {
         .args([
             "-sC",
             "-sV",
+            "-oN",
+            format!("nmap-{}.txt", ip.clone()).as_str(),
             ip.clone().as_str(),
         ])
         .output()
