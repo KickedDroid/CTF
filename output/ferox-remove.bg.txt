@@ -1,9 +1,0 @@
-200      GET        1l      116w     3429c https://remove.bg/cdn-cgi/styles/cf.errors.ie.css
-200      GET        1l      703w    24132c https://remove.bg/cdn-cgi/styles/cf.errors.css
-404      GET        0l        0w        0c https://remove.bg/cdn-cgi/
-403      GET       93l      349w     4510c https://remove.bg/error_log
-403      GET        7l        9w      151c https://remove.bg/cdn-cgi/styles/
-301      GET        7l       11w      167c https://remove.bg/cdn-cgi/styles/fonts => http://remove.bg/cdn-cgi/styles/fonts/
-301      GET        7l       11w      169c https://remove.bg/careers => https://www.lifeatcanva.com/
-403      GET       93l      349w     4510c https://remove.bg/access_log
-404      GET        0l        0w        0c https://remove.bg/cdn-cgi

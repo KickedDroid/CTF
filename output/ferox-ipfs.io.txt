@@ -1,9 +1,0 @@
-200      GET        1l        1w        2c https://ipfs.io/health
-404      GET        7l       11w      150c https://ipfs.io/mirror
-200      GET        2l        4w       44c https://ipfs.io/version
-200      GET        1l        1w        2c https://ipfs.io/healthcare
-200      GET        1l        1w        2c https://ipfs.io/healthcheck
-200      GET        1l        1w        2c https://ipfs.io/healthprofile
-200      GET        1l        1w        2c https://ipfs.io/health-info
-200      GET        1l        1w        2c https://ipfs.io/healthscout
-200      GET        1l        1w        2c https://ipfs.io/health-news
