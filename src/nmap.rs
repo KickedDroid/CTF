@@ -3,15 +3,16 @@ use std::process::Command;
 
 
 pub(crate) fn nmap_scan(ip: String) {
+
+    println!("Running nmap on {}", ip.clone());
    
     let nmap_result = Command::new("nmap")
         .args([
-            "-sC",
-            "-sV",
-            "-oN",
-            format!("nmap-{}.txt", ip.clone()).as_str(),
             ip.clone().as_str(),
-        ])
+            "-sC",
+            "-Pn",
+            "-sV",
+            ])
         .output()
         .expect("nmap scan failed...");
     print!("{}", String::from_utf8_lossy(&nmap_result.stdout));

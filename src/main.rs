@@ -23,7 +23,7 @@ async fn main() ->  Result<(), std::io::Error> {
 mod tests {
     #[test]
     fn test_nmap() {
-        let ip = "127.0.0.1";
+        let ip = "ipfs.io";
         super::nmap::nmap_scan(ip.to_string());
     }
     #[test]

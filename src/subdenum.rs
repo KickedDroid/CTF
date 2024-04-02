@@ -3,9 +3,9 @@ use std::process::Command;
 
 pub(crate) fn subdomain_enum(url: String) {
     let subdomain_enum_cmd = format!("./subscout -t {}", url.clone());
-    let subd_enum_result = Command::new("feroxbuster")
+    let subd_enum_result = Command::new("./subscout")
         .args([
-            "--url",
+            "-t",
             url.clone().as_str(),
         ])
         .output()
