@@ -7,6 +7,12 @@ Quickly test a url against many tools such as:
 - Nuclei (WIP)
 - Wordlist Generator
 
+Todo:
+- Obsidian/Markdown output
+- SSL Scanning
+- whatweb
+- SQLi Scanning
+- mtr
 ---
 ## Build
 ``bash build.sh``
