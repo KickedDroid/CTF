@@ -1,6 +1,6 @@
 # Pentest Automation with Rust
 Quickly test a url against many tools such as:
-- Subfinder
+- Subscout
 - Rustscan
 - Feroxbuster
 - XSStrike (WIP) 
