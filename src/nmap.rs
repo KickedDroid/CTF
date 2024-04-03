@@ -2,7 +2,7 @@ use std::process::Command;
 
 
 
-pub(crate) fn nmap_scan(ip: String) {
+pub(crate) async fn nmap_scan(ip: String) {
 
     println!("Running nmap on {}", ip.clone());
    

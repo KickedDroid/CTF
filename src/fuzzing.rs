@@ -1,6 +1,6 @@
 use std::process::Command;
 
-pub(crate) fn fuzz(url: String) {
+pub(crate) async fn fuzz(url: String) {
     println!("Running Feroxbuster on {}", url.clone());
     
     let ferox_result = Command::new("feroxbuster")
@@ -8,7 +8,7 @@ pub(crate) fn fuzz(url: String) {
             "--url",
             url.clone().as_str(),
             "-w",
-            "../wordlists/raft-medium-directories.txt",
+            "wordlists/raft-medium-directories.txt",
             "-o",
             format!("ferox-{}.txt", url.clone()).as_str(),
         ])

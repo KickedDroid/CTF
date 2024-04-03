@@ -1,9 +1,9 @@
 use std::process::Command;
 
 
-pub(crate) fn subdomain_enum(url: String) {
+pub(crate) async fn subdomain_enum(url: String) {
     let subdomain_enum_cmd = format!("./subscout -t {}", url.clone());
-    let subd_enum_result = Command::new("./subscout")
+    let subd_enum_result = Command::new("./subscoutb")
         .args([
             "-t",
             url.clone().as_str(),
