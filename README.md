@@ -16,7 +16,13 @@ Todo:
 - mtr
 ---
 ## Build
-``bash build.sh``
+```cd pentest
+   cargo build --release && cp target/release/pentest .
+```
+```
+git clone https://github.com/dom-sec/subscout
+cd subscout && cargo build --release && cp /target/release/subscout .
+```
 ## Run 
 ```
 ./pentest example.com
