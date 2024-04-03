@@ -1,4 +1,5 @@
 # Pentest Automation with Rust
+An extensible, multithreaded tool to gather recon for a Pentest or CTF! 
 Quickly test a url against many tools such as:
 - Subscout
 - Rustscan
