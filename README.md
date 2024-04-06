@@ -20,8 +20,8 @@ Todo:
    cargo build --release && cp target/release/pentest .
 ```
 ```
-git clone https://github.com/dom-sec/subscout
-cd subscout && cargo build --release && cp /target/release/subscout .
+git clone https://github.com/dom-sec/subscout &&
+cd subscout && cargo build --release && cp /target/release/subscout . && cd ../ && cp /subscout/subscout . 
 ```
 ## Run 
 ```
