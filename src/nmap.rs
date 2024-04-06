@@ -15,7 +15,9 @@ pub(crate) async fn nmap_scan(ip: String) {
             ])
         .output()
         .expect("nmap scan failed...");
+    println!("Nmap Results ---------------------------------");
     print!("{}", String::from_utf8_lossy(&nmap_result.stdout));
+    println!("End of Nmap Results --------------------------\n");
 }
 
 fn process_nmap_result(res: String)  {

@@ -9,11 +9,10 @@ pub(crate) async fn fuzz(url: String) {
             url.clone().as_str(),
             "-w",
             "wordlists/raft-medium-directories.txt",
-            "-o",
-            format!("ferox-{}.txt", url.clone()).as_str(),
         ])
         .output()
         .expect("feroxbuster scan failed...");
-
+    println!("Feroxbuster Results ---------------------------------");
     print!("{}", String::from_utf8_lossy(&ferox_result.stdout));
+    println!("End of Feroxbuster Results --------------------------\n")
 }
