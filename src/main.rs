@@ -4,18 +4,28 @@ mod subdenum;
 mod fuzzing;
 mod whowhat;
 use std::{env, os::unix::thread};
-use clap::Command;
+use clap::{arg};
+use std::process::Command;
 
 
 fn main() ->  Result<(), std::io::Error> {
     //utils::display_name();
     let args: Vec<String> = env::args().collect();
-    let ip = &args[1];
-
+    let mut ip = &args[1];
     println!("Performing recon on {:?}\n", ip);
 
-    let rustscan = Command::new("rustscan");
-    let ferox = Command::new("feroxbuster");
+    let rustscan = Command::new("rustscan").args([
+        "-a",
+        ip.clone().as_str(),
+        "--",
+        "-sC",
+        "-sV"
+    ]).output()
+    .expect("Rustscan failed...");
+
+    print!("{}", String::from_utf8_lossy(&rustscan.stdout));
+
+    let ferox = fuzzing::fuzz(ip.to_string());
     let ffuf = Command::new("ffuf");
 
     Ok(())
