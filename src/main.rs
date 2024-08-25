@@ -9,7 +9,7 @@ use std::{env, os::unix::thread};
 use clap::{arg};
 use zap::ZapScanner;
 use std::process::Command;
-use ffuf::run_ffuf_with_auto_filter;
+use ffuf::run_ffuf_with_smart_filter;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // ffuf
     println!("\nRunning ffuf...");
-    run_ffuf_with_auto_filter(domain).await?;
+    run_ffuf_with_smart_filter(domain).await?;
 
     
     
