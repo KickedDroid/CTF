@@ -16,11 +16,11 @@ pub async fn run_ffuf_with_smart_filter(domain: &str) -> Result<(), Box<dyn std:
             "-t", "50",
             "-p", "0.1", // Use 10% of the wordlist as a sample
             "-of", "json"
-        ])
-        .output()?;
+        ]).output()?;
 
     // Step 2: Analyze the sample results
     let sample_results: Value = serde_json::from_str(&String::from_utf8_lossy(&sample_output.stdout))?;
+    println!("{}", sample_results);
     let results = sample_results["results"].as_array().unwrap();
 
     let mut response_characteristics = HashMap::new();
