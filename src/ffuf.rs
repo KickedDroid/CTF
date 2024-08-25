@@ -54,6 +54,6 @@ pub async fn run_ffuf_with_auto_filter(domain: &str) -> Result<(), Box<dyn std::
 
     println!("ffuf scan completed. Results saved in ffuf_results.json");
     println!("Used filters: -fs {} -fc {}", avg_size, most_common_status);
-
+    println!("{}", String::from_utf8_lossy(&main_output.stdout));
     Ok(())
 }
