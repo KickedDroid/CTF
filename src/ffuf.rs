@@ -15,7 +15,6 @@ pub async fn run_ffuf_with_smart_filter(domain: &str) -> Result<(), Box<dyn std:
             "-c",
             "-t", "50",
             "-p", "0.1", // Use 10% of the wordlist as a sample
-            "-o", "sample_results.json",
             "-of", "json"
         ])
         .output()?;
