@@ -4,12 +4,10 @@ mod subdenum;
 mod fuzzing;
 mod whowhat;
 mod zap;
-mod ffuf;
 use std::{env, os::unix::thread};
 use clap::{arg};
 use zap::ZapScanner;
 use std::process::Command;
-use ffuf::run_ffuf_with_smart_filter;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
@@ -42,7 +40,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // ffuf
     println!("\nRunning ffuf...");
-    run_ffuf_with_smart_filter(domain).await?;
+    let ffuf_output = Command::new("ffuf")
+        .args(&[
+            "-w", "/home/nacho/Documents/tools/SecLists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ",
+            "-u", &format!("http://{}", domain),
+            "-H", &format!("Host: FUZZ.{}", domain),
+        ])
+        .output()?;
+    println!("{}", String::from_utf8_lossy(&ffuf_output.stdout));
 
     
     

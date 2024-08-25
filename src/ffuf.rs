@@ -13,7 +13,6 @@ pub async fn run_ffuf_with_smart_filter(domain: &str) -> Result<(), Box<dyn std:
             "-u", &format!("http://{}", domain),
             "-H", &format!("Host: FUZZ.{}", domain),
             "-c",
-            "-t", "50",
             "-p", "0.1", // Use 10% of the wordlist as a sample
             "-of", "json"
         ]).output()?;
