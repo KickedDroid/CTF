@@ -5,28 +5,48 @@ mod fuzzing;
 mod whowhat;
 use std::{env, os::unix::thread};
 use clap::{arg};
+use whowhat::whowhat;
 use std::process::Command;
-
-
-fn main() ->  Result<(), std::io::Error> {
-    //utils::display_name();
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
-    let mut ip = &args[1];
-    println!("Performing recon on {:?}\n", ip);
 
-    let rustscan = Command::new("rustscan").args([
-        "-a",
-        ip.clone().as_str(),
-        "--",
-        "-sC",
-        "-sV"
-    ]).output()
-    .expect("Rustscan failed...");
+    if args.len() != 3 {
+        eprintln!("Usage: {} <IP> <DOMAIN>", args[0]);
+        std::process::exit(1);
+    }
 
-    print!("{}", String::from_utf8_lossy(&rustscan.stdout));
+    let ip = &args[1];
+    let domain = &args[2];
 
-    let ferox = fuzzing::fuzz(ip.to_string());
-    let ffuf = Command::new("ffuf");
+    println!("IP set to: {}", ip);
+    println!("DOMAIN set to: {}", domain);
+
+    whowhat(domain.clone()).await;
+    // Rustscan
+    println!("\nRunning Rustscan...");
+    let rustscan_output = Command::new("rustscan")
+        .args(&["-a", ip, "--", "-sV", "-sC"])
+        .output()?;
+    println!("{}", String::from_utf8_lossy(&rustscan_output.stdout));
+
+    // Nuclei
+    println!("\nRunning Nuclei...");
+    let nuclei_output = Command::new("nuclei")
+        .args(&["-i", ip])
+        .output()?;
+    println!("{}", String::from_utf8_lossy(&nuclei_output.stdout));
+
+    // ffuf
+    println!("\nRunning ffuf...");
+    let ffuf_output = Command::new("ffuf")
+        .args(&[
+            "-w", "/home/nacho/Documents/tools/SecLists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ",
+            "-u", &format!("http://{}", domain),
+            "-H", &format!("Host: FUZZ.{}", domain),
+        ])
+        .output()?;
+    println!("{}", String::from_utf8_lossy(&ffuf_output.stdout));
 
     Ok(())
 }

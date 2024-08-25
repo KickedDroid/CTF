@@ -11,7 +11,7 @@ pub(crate) async fn whowhat(url: String) {
             .progress_chars("#>-"),
     );
     
-    let mut whowhat_result = Command::new("whatweb")
+    let whowhat_result = Command::new("whatweb")
         .args([
             url.clone().as_str(),
             "-a1"
