@@ -6,7 +6,6 @@ mod whowhat;
 mod zap;
 use std::{env, os::unix::thread};
 use clap::{arg};
-use whowhat::whowhat;
 use zap::ZapScanner;
 use std::process::Command;
 #[tokio::main]
@@ -24,11 +23,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("IP set to: {}", ip);
     println!("DOMAIN set to: {}", domain);
 
-    whowhat(domain.clone()).await;
+    //whowhat(domain.clone()).await;
     // Rustscan
     println!("\nRunning Rustscan...");
     let rustscan_output = Command::new("rustscan")
-        .args(&["-a", ip, "--", "-sV", "-sC"])
+        .args(&["-a", ip,"-g","--", "-sV", "-sC"])
         .output()?;
     println!("{}", String::from_utf8_lossy(&rustscan_output.stdout));
 
