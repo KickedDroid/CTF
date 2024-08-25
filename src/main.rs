@@ -3,9 +3,11 @@ mod nmap;
 mod subdenum;
 mod fuzzing;
 mod whowhat;
+mod zap;
 use std::{env, os::unix::thread};
 use clap::{arg};
 use whowhat::whowhat;
+use zap::ZapScanner;
 use std::process::Command;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -47,6 +49,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ])
         .output()?;
     println!("{}", String::from_utf8_lossy(&ffuf_output.stdout));
+
+
+    let zap_api_url = "http://localhost:8080";
+    let api_key = env::var("ZAP_API_KEY").expect("ZAP_API_KEY not set in environment");
+
+    let scanner = ZapScanner::new(zap_api_url.to_string(), api_key);
+    let target_url = format!("http://{}",domain.clone());
+    let scan_results = scanner.scan_target(&target_url).await?;
+
+    println!("Scan Alerts:\n{}", scan_results);
 
     Ok(())
 }

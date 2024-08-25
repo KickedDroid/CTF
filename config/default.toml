@@ -1,0 +1,2 @@
+zap_api_url = "http://localhost:8080"
+api_key = "default_key"
