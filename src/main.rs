@@ -32,14 +32,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\nRunning Rustscan...");
     let rustscan_output = Command::new("rustscan")
         .args(&["-a", &ip, "-g", "--ulimit", "5000"])
-        .output()?;
-    println!("{}", String::from_utf8_lossy(&rustscan_output.stdout));
-
-    process_ports(
-        String::from_utf8_lossy(&rustscan_output.stdout).to_string(),
-        ip.clone(),
-    );
-
+        .output();
+    match rustscan_output {
+        Ok(output) => {
+            println!("{}", String::from_utf8_lossy(&output.stdout));
+            process_ports(
+                String::from_utf8_lossy(&output.stdout).to_string(),
+                ip.clone(),
+            );
+        },
+        Err(e) => eprintln!("Rustscan Failed {e}")
+    }
     thread::spawn(move || {
         kronos::start_daemon();
     });
@@ -169,35 +172,6 @@ fn process_ports(results: String, ip: String) {
         }
         false => {}
     }
-}
-
-async fn ferox_buster(domain: String) -> Result<(), Error> {
-    let toml_string = fs::read_to_string("config/default.toml")
-        .await
-        .expect("Failed to initialize config");
-    let config: Config = toml::from_str(toml_string.as_str()).unwrap();
-
-    let wl = config.wordlist["ferox_wordlist"].clone();
-    thread::spawn(move || {
-        // ffuf
-        let ffuf_output = Command::new("ffuf")
-            .args(&[
-                "-u",
-                &format!("http://{}", domain),
-                "-w",
-                &format!("{}:FUZZ", wl),
-                "-H",
-                &format!("Host: FUZZ.{}", domain),
-            ])
-            .output();
-        match ffuf_output {
-            Ok(output) => {
-                println!("{}", String::from_utf8_lossy(&output.stdout));
-            }
-            Err(e) => println!("ffuf SHID {}", e),
-        }
-    });
-    Ok(())
 }
 
 #[cfg(test)]

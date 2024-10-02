@@ -7,8 +7,6 @@ pub(crate) async fn fuzz(url: String) {
         .args([
             "--url",
             url.clone().as_str(),
-            "-w",
-            "wordlists/raft-medium-directories.txt",
         ])
         .output()
         .expect("feroxbuster scan failed...");
