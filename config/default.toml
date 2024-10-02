@@ -1,2 +1,10 @@
+[wordlist]
+ffuf_wordlist = "/usr/share/SecLists/Discovery/DNS/subdomains-top1million-5000.txt"
+ferox_wordlist = ""
+
+[htb]
+api_token = ""
+
+[zap]
 zap_api_url = "http://localhost:8080"
 api_key = "default_key"

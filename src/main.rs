@@ -1,13 +1,15 @@
-mod utils;
-mod nmap;
-mod subdenum;
 mod fuzzing;
-mod whowhat;
+mod kronos;
+mod nmap;
+mod utils;
 mod zap;
-use std::{env, os::unix::thread};
-use clap::{arg};
-use zap::ZapScanner;
+use serde::de::value::Error;
+use std::env;
 use std::process::Command;
+use std::thread;
+use tokio::fs;
+use utils::Config;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
@@ -17,8 +19,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::process::exit(1);
     }
 
-    let ip = &args[1];
-    let domain = &args[2];
+    let mut ip = &args[1];
+    let ip = ip.to_string().clone();
+    let mut domain = &args[2];
+    let domain = domain.to_string().clone();
 
     println!("IP set to: {}", ip);
     println!("DOMAIN set to: {}", domain);
@@ -27,39 +31,172 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Rustscan
     println!("\nRunning Rustscan...");
     let rustscan_output = Command::new("rustscan")
-        .args(&["-a", ip,"-g","--", "-sV", "-sC"])
+        .args(&["-a", &ip, "-g", "--ulimit", "5000"])
         .output()?;
     println!("{}", String::from_utf8_lossy(&rustscan_output.stdout));
 
-    // Nuclei
-    println!("\nRunning Nuclei...");
-    let nuclei_output = Command::new("nuclei")
-        .args(&["-i", ip])
-        .output()?;
-    println!("{}", String::from_utf8_lossy(&nuclei_output.stdout));
+    process_ports(
+        String::from_utf8_lossy(&rustscan_output.stdout).to_string(),
+        ip.clone(),
+    );
 
-    // ffuf
-    println!("\nRunning ffuf...");
-    let ffuf_output = Command::new("ffuf")
-        .args(&[
-            "-w", "/home/nacho/Documents/tools/SecLists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ",
-            "-u", &format!("http://{}", domain),
-            "-H", &format!("Host: FUZZ.{}", domain),
-        ])
-        .output()?;
-    println!("{}", String::from_utf8_lossy(&ffuf_output.stdout));
+    thread::spawn(move || {
+        kronos::start_daemon();
+    });
 
-    
-    
-    let zap_api_url = "http://localhost:8080";
-    let api_key = env::var("ZAP_API_KEY").expect("ZAP_API_KEY not set in environment");
+    loop {}
+    Ok(())
+}
 
-    let scanner = ZapScanner::new(zap_api_url.to_string(), api_key);
-    let target_url = format!("http://{}",domain.clone());
-    let scan_results = scanner.scan_target(&target_url).await?;
+fn process_ports(results: String, ip: String) {
+    let ip = ip.clone();
+    let is_smb = results.contains("445") | results.contains("139");
+    let is_ftp = results.contains("20") | results.contains("21");
+    let is_http = results.contains("80") | results.contains("8080");
+    let host = ip.clone();
+    match is_smb {
+        true => {
+            thread::spawn(move || {
+                println!("Found SMB Server. Running netexec...");
+                // Nuclei
+                let netexec_rid = Command::new("netexec")
+                    .args(&[
+                        "smb",
+                        ip.clone().as_str(),
+                        "-u",
+                        "\"guest\"",
+                        "-p",
+                        "",
+                        "--rid-brute",
+                        "--threads",
+                        "5",
+                    ])
+                    .output();
+                match netexec_rid {
+                    Ok(output) => {
+                        println!(
+                            "\n**SMB**\n**RIDS**\n{}\n***RIDS***",
+                            String::from_utf8_lossy(&output.stdout)
+                        );
+                    }
+                    Err(e) => println!("netexec RIDS SHIDDED {}", e),
+                }
+                let netexec_shares = Command::new("netexec")
+                    .args(&[
+                        "smb",
+                        ip.clone().as_str(),
+                        "-u",
+                        "\"guest\"",
+                        "-p",
+                        "",
+                        "--shares",
+                        "--threads",
+                        "5",
+                    ])
+                    .output();
+                match netexec_shares {
+                    Ok(output) => {
+                        println!(
+                            "\n**SHARES**\n{}\n***SHARES***",
+                            String::from_utf8_lossy(&output.stdout)
+                        );
+                    }
+                    Err(e) => println!("netexec SHARES SHIDDED {}", e),
+                }
+                let netexec_dump = Command::new("netexec")
+                    .args(&[
+                        "smb",
+                        ip.clone().as_str(),
+                        "-u",
+                        "\"guest\"",
+                        "-p",
+                        "",
+                        "--threads",
+                        "5",
+                        "-M",
+                        "spider_plus",
+                        "-o",
+                        "DOWNLOAD_FLAGS=True",
+                        "OUTPUT_FOLDER=.",
+                    ])
+                    .output();
+                match netexec_dump {
+                    Ok(output) => {
+                        println!(
+                            "\n**DUMP**\n{}\n***DUMP***\n\n***SMB***",
+                            String::from_utf8_lossy(&output.stdout)
+                        );
+                        let grep = Command::new("netexec")
+                            .args(&[
+                                "grep",
+                                "-r",
+                                "password",
+                                "."
+                            ])
+                            .output();
+                        match grep {
+                            Ok(output) => {
+                                println!(
+                                    "\n{}\n",
+                                    String::from_utf8_lossy(&output.stdout)
+                                );
+                            }
+                            Err(e) => println!("netexec DUMP SHIDDED {}", e),
+                        }
+                    }
+                    Err(e) => println!("netexec DUMP SHIDDED {}", e),
+                }
+            });
+        }
+        false => {}
+    }
 
-    println!("Scan Alerts:\n{}", scan_results);
+    match is_http {
+        true => {
+            thread::spawn(move || {
+                // Nuclei
+                let nuclei_output = Command::new("nuclei").args(&["-u", &host.clone()]).output();
+                match nuclei_output {
+                    Ok(output) => {
+                        println!(
+                            "\n**NUCLEI**\n{}\n***NUCLEI***",
+                            String::from_utf8_lossy(&output.stdout)
+                        );
+                    }
+                    Err(e) => println!("NUKE SHIDDED {}", e),
+                }
+            });
+        }
+        false => {}
+    }
+}
 
+async fn ferox_buster(domain: String) -> Result<(), Error> {
+    let toml_string = fs::read_to_string("config/default.toml")
+        .await
+        .expect("Failed to initialize config");
+    let config: Config = toml::from_str(toml_string.as_str()).unwrap();
+
+    let wl = config.wordlist["ferox_wordlist"].clone();
+    thread::spawn(move || {
+        // ffuf
+        let ffuf_output = Command::new("ffuf")
+            .args(&[
+                "-u",
+                &format!("http://{}", domain),
+                "-w",
+                &format!("{}:FUZZ", wl),
+                "-H",
+                &format!("Host: FUZZ.{}", domain),
+            ])
+            .output();
+        match ffuf_output {
+            Ok(output) => {
+                println!("{}", String::from_utf8_lossy(&output.stdout));
+            }
+            Err(e) => println!("ffuf SHID {}", e),
+        }
+    });
     Ok(())
 }
 
@@ -75,33 +212,10 @@ mod tests {
         });
     }
     #[test]
-    fn test_subdomain_enum() {
-        let url = "google.com";
-        tokio::runtime::Runtime::new().unwrap().block_on(async {
-            super::subdenum::subdomain_enum(url.to_string()).await;
-        });
-    }
-    #[test]
     fn test_fuzz() {
         let url = "google.com";
         tokio::runtime::Runtime::new().unwrap().block_on(async {
             super::fuzzing::fuzz(url.to_string()).await;
-        });
-    }
-    #[test]
-    fn test_whowhat() {
-        let pb = utils::display_progressbar();
-        let url = "google.com";
-        tokio::runtime::Runtime::new().unwrap().block_on(async {
-            super::whowhat::whowhat(url.to_string()).await;
-        });
-        pb.finish()
-    }
-    #[test]
-    fn test_subdomain_enum_parallel() {
-        let url = "kaleido.ai";
-        tokio::runtime::Runtime::new().unwrap().block_on(async {
-            super::subdenum::subdomain_enum_parallel(url.to_string(), "wordlists/subdomains-top1million-5000.txt".to_owned()).await;
         });
     }
 }
