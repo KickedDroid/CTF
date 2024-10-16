@@ -3,25 +3,30 @@ mod kronos;
 mod nmap;
 mod utils;
 mod zap;
+use clap::Parser;
 use serde::de::value::Error;
 use std::env;
+use std::net::Ipv4Addr;
 use std::process::Command;
 use std::thread;
 use tokio::fs;
 use utils::Config;
 
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    #[clap(short, long)]
+    ip: Ipv4Addr,
+    domain: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args: Vec<String> = env::args().collect();
+    let args = Args::parse();
+    let ip = args.ip;
 
-    if args.len() != 3 {
-        eprintln!("Usage: {} <IP> <DOMAIN>", args[0]);
-        std::process::exit(1);
-    }
-
-    let mut ip = &args[1];
     let ip = ip.to_string().clone();
-    let mut domain = &args[2];
+    let domain = args.domain;
     let domain = domain.to_string().clone();
 
     println!("IP set to: {}", ip);
@@ -29,7 +34,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     //whowhat(domain.clone()).await;
     // Rustscan
-    println!("\nRunning Rustscan...");
     let rustscan_output = Command::new("rustscan")
         .args(&["-a", &ip, "-g", "--ulimit", "5000"])
         .output();
@@ -40,12 +44,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 String::from_utf8_lossy(&output.stdout).to_string(),
                 ip.clone(),
             );
-        },
-        Err(e) => eprintln!("Rustscan Failed {e}")
+        }
+        Err(e) => eprintln!("Rustscan Failed {e}"),
     }
-    thread::spawn(move || {
-        kronos::start_daemon();
-    });
+    //thread::spawn(move || {
+    //    kronos::start_daemon();
+    //});
 
     loop {}
     Ok(())
@@ -130,19 +134,11 @@ fn process_ports(results: String, ip: String) {
                             String::from_utf8_lossy(&output.stdout)
                         );
                         let grep = Command::new("netexec")
-                            .args(&[
-                                "grep",
-                                "-r",
-                                "password",
-                                "."
-                            ])
+                            .args(&["grep", "-r", "password", "."])
                             .output();
                         match grep {
                             Ok(output) => {
-                                println!(
-                                    "\n{}\n",
-                                    String::from_utf8_lossy(&output.stdout)
-                                );
+                                println!("\n{}\n", String::from_utf8_lossy(&output.stdout));
                             }
                             Err(e) => println!("netexec DUMP SHIDDED {}", e),
                         }
